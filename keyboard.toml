@@ -1,0 +1,143 @@
+[rmk]
+debounce_time = 5
+macro_space_size = 1024
+
+[chip.nrf52840]
+# Enable DCDC regulator 0
+dcdc_reg0 = true
+# Enable DCDC regulator 1
+dcdc_reg1 = true
+
+[keyboard]
+name = "DOIO KB29B-01"
+product_name = "DOIO KB29B-01"
+vendor_id = 0xFEED
+product_id = 0x6060
+manufacturer = "Bun"
+chip = "nrf52840"
+
+[layout]
+rows = 6
+cols = 12
+map = """
+(0,0)  (0,1)  (0,2)  (0,3)  (0,4)  (0,5)    (0,6)  (0,7)  (0,8)  (0,9)  (0,10)  (0,11)
+(1,0)  (1,1)  (1,2)  (1,3)  (1,4)  (1,5)    (1,6)  (1,7)  (1,8)  (1,9)  (1,10)  (1,11)
+(2,0)  (2,1)  (2,2)  (2,3)  (2,4)  (2,5)    (2,6)  (2,7)  (2,8)  (2,9)  (2,10)  (2,11)
+(3,0)  (3,1)  (3,2)  (3,3)  (3,4)  (3,5)    (3,6)  (3,7)  (3,8)  (3,9)  (3,10)  (3,11)
+       (4,1)  (4,2)  (4,3)  (4,4)  (4,5)    (4,6)  (4,7)  (4,8)  (4,9)  (4,10)
+(5,0)  (5,1)  (5,2)  (5,3)  (5,4)  (5,5)    (5,6)  (5,7)  (5,8)  (5,9)  (5,10)  (5,11)
+"""
+
+[keymap]
+layers = 2
+
+[[keymap.layer]]
+keys = """
+Escape  1   2   3   4   5           6   7   8   9   0   Backspace
+Tab     Q   W   E   R   T           Y   U   I   O   P   PageUp
+LCtrl   A   S   D   F   G           H   J   K   L   ;   Enter
+LShift  Z   X   C   V   B           N   M   ,   .   /   RShift
+LCtrl LAlt LGui Space MO(1)         MO(1) Space RGui RAlt RCtrl
+TG(1) AudioMute Right Down Left Up  TG(1) AudioMute Right Down Left Up
+"""
+# Encoder 0 - CW: AudioVolUp, CCW: AudioVolDown
+encoders = [
+    ["AudioVolUp", "AudioVolDown"],
+    ["AudioVolUp", "AudioVolDown"]
+]
+
+[[keymap.layer]]
+keys = """
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+   __ __ __ __ __                   __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+"""
+encoders = [
+    ["BrightnessUp", "BrightnessDown"],
+    ["BrightnessUp", "BrightnessDown"],
+]
+
+[storage]
+
+[ble]
+enabled = true
+# default_tx_power = 8
+use_2m_phy = true
+
+[behavior]
+
+[split]
+connection = "ble"
+
+[split.central]
+rows = 6
+cols = 6
+row_offset = 0
+col_offset = 0
+battery_adc_pin = "vddh"
+
+[split.central.matrix]
+matrix_type = "normal"
+# rows
+row_pins = ["P0_17", "P0_20", "P0_22", "P0_13", "P0_24", "P1_00"]
+# cols
+col_pins = ["P1_11", "P1_10", "P0_03", "P0_28", "P1_13", "P0_02"]
+
+[[split.central.input_device.encoder]]
+pin_a = "P0_05"
+pin_b = "P1_09"
+phase = "resolution"
+resolution = 2
+
+[[split.peripheral]]
+rows = 6
+cols = 6
+row_offset = 0
+col_offset = 6
+battery_adc_pin = "vddh"
+
+[split.peripheral.matrix]
+matrix_type = "normal"
+# rows
+row_pins = ["P0_17", "P0_20", "P0_22", "P0_13", "P0_24", "P1_00"]
+# cols
+col_pins = ["P1_11", "P1_10", "P0_03", "P0_28", "P1_13", "P0_02"]
+
+[[split.peripheral.input_device.encoder]]
+pin_a = "P0_05"
+pin_b = "P1_09"
+phase = "resolution"
+resolution = 2
+
+[host]
+vial_insecure = true
+
+# Bump subs so the central's RgbTog processor in src/central.rs can subscribe.
+# Default subs = 0 makes ActionEvent publishes a no-op.
+[event.action]
+pubs = 1
+subs = 1
+
+# Central publishes RgbStateEvent on toggle; split/driver subscribes (1)
+# and forwards as SplitMessage::LedState. Peripheral publishes on receive
+# and the peripheral's RGB-mirror processor subscribes (1).
+[event.rgb_state]
+subs = 1
+
+[event.layer_change]
+pubs = 2
+subs = 2
+
+[event.led_indicator]
+pubs = 1
+subs = 1
+
+# Each half's RGB processor subscribes to its local BatteryStatusEvent to drive
+# the battery-level gauge. subs is additive on top of the feature-based bumps
+# (_ble +2, split+_ble +1), so this reserves headroom for that extra subscriber.
+[event.battery_status]
+pubs = 2
+subs = 2
