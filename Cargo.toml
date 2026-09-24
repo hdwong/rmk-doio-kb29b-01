@@ -12,8 +12,11 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 rmk = { path = "rmk/rmk", features = [
     "defmt", "storage", "vial", "watchdog", "dongle",
-    "nrf52840_ble", "split", "async_matrix", "adafruit_bl", "subrating"
+    "nrf52840_ble", "split", "async_matrix", "adafruit_bl", "subrating",
+    "ssd1306"
 ] }
+embedded-graphics = "0.8"
+heapless = "0.9"
 nrf-sdc = { version = "0.4.0", features = [
     "defmt",
     "peripheral",
@@ -48,6 +51,11 @@ defmt = "1"
 defmt-rtt = "1"
 panic-probe = { version = "1", features = ["print-defmt"] }
 static_cell = "2"
+
+# Shared I2C bus for the OLED + CW2015 fuel gauge (see src/display/oled.rs).
+embassy-sync = { version = "0.8", features = ["defmt"] }
+embassy-embedded-hal = { version = "0.6", features = ["defmt"] }
+embedded-hal-async = "1.0"
 
 [build-dependencies]
 xz2 = "0.1.7"
