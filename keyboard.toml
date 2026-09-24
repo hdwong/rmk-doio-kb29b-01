@@ -29,7 +29,7 @@ map = """
 """
 
 [keymap]
-layers = 2
+layers = 4
 
 [[keymap.layer]]
 keys = """
@@ -38,7 +38,7 @@ Tab     Q   W   E   R   T           Y   U   I   O   P   PageUp
 LCtrl   A   S   D   F   G           H   J   K   L   ;   Enter
 LShift  Z   X   C   V   B           N   M   ,   .   /   RShift
 LCtrl LAlt LGui Space MO(1)         MO(1) Space RGui RAlt RCtrl
-TG(1) AudioMute Right Down Left Up  TG(1) AudioMute Right Down Left Up
+Up Left Down Right AudioMute TO(1)  TO(1) AudioMute Right Down Left Up
 """
 # Encoder 0 - CW: AudioVolUp, CCW: AudioVolDown
 encoders = [
@@ -53,18 +53,46 @@ __ __ __ __ __ __                   __ __ __ __ __ __
 __ __ __ __ __ __                   __ __ __ __ __ __
 __ __ __ __ __ __                   __ __ __ __ __ __
    __ __ __ __ __                   __ __ __ __ __
-__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ TO(2)                TO(2) __ __ __ __ __
 """
 encoders = [
     ["BrightnessUp", "BrightnessDown"],
     ["BrightnessUp", "BrightnessDown"],
 ]
 
+[[keymap.layer]]
+keys = """
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+   __ __ __ __ __                   __ __ __ __ __
+__ __ __ __ __ TO(3)               TO(3) __ __ __ __ __
+"""
+encoders = [
+    ["__", "__"],
+    ["__", "__"],
+]
+
+[[keymap.layer]]
+keys = """
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+__ __ __ __ __ __                   __ __ __ __ __ __
+   __ __ __ __ __                   __ __ __ __ __
+__ __ __ __ __ TO(0)               TO(0) __ __ __ __ __
+"""
+encoders = [
+    ["__", "__"],
+    ["__", "__"],
+]
+
 [storage]
 
 [ble]
 enabled = true
-# default_tx_power = 8
+default_tx_power = 8
 use_2m_phy = true
 
 [behavior]
@@ -82,15 +110,22 @@ battery_adc_pin = "vddh"
 [split.central.matrix]
 matrix_type = "normal"
 # rows
-row_pins = ["P0_17", "P0_20", "P0_22", "P0_13", "P0_24", "P1_00"]
+row_pins = ["P0_31", "P0_29", "P0_02", "P1_13", "P0_30", "P0_28"]
 # cols
-col_pins = ["P1_11", "P1_10", "P0_03", "P0_28", "P1_13", "P0_02"]
+col_pins = ["P0_20", "P0_22", "P1_00", "P1_02", "P1_04", "P1_06"]
+row2col = true
 
 [[split.central.input_device.encoder]]
-pin_a = "P0_05"
-pin_b = "P1_09"
+pin_a = "P1_11"
+pin_b = "P1_10"
 phase = "resolution"
 resolution = 2
+
+# NOTE: The 0.91" SSD1306 OLED (128x32) is intentionally NOT configured here.
+# It shares its I2C bus (SDA=P0_06, SCL=P0_08, TWISPI0) with a CW2015 fuel gauge,
+# and RMK's generated display support takes exclusive ownership of that bus. The
+# OLED is instead driven by `OledBatteryProcessor` (src/display/oled.rs), which
+# owns the bus and shares it between the panel and the CW2015. See that file.
 
 [[split.peripheral]]
 rows = 6
@@ -102,15 +137,21 @@ battery_adc_pin = "vddh"
 [split.peripheral.matrix]
 matrix_type = "normal"
 # rows
-row_pins = ["P0_17", "P0_20", "P0_22", "P0_13", "P0_24", "P1_00"]
+row_pins = ["P0_15","P0_17","P0_20","P0_13","P0_24","P1_00"]
 # cols
 col_pins = ["P1_11", "P1_10", "P0_03", "P0_28", "P1_13", "P0_02"]
+row2col = true
 
 [[split.peripheral.input_device.encoder]]
-pin_a = "P0_05"
-pin_b = "P1_09"
+pin_a = "P0_10"
+pin_b = "P0_09"
 phase = "resolution"
 resolution = 2
+reverse = true
+
+# NOTE: The peripheral OLED is likewise driven by `OledBatteryProcessor`
+# (src/display/oled.rs) rather than RMK's generated display support, so it can
+# share the I2C bus (SDA=P0_06, SCL=P0_08, TWISPI0) with the CW2015 fuel gauge.
 
 [host]
 vial_insecure = true
@@ -140,4 +181,10 @@ subs = 1
 # (_ble +2, split+_ble +1), so this reserves headroom for that extra subscriber.
 [event.battery_status]
 pubs = 2
+subs = 2
+
+# On the peripheral binary this event now has two subscribers: the generated
+# DisplayProcessor (OledRenderer) and the PeripheralProcessor in
+# src/peripheral.rs that drives the split-link status LED. The default is 1.
+[event.central_connected]
 subs = 2
